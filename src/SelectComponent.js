@@ -44,7 +44,7 @@ export default function SelectComponent({ options, onSelect }) {
           placeholder="Digite para pesquisar"
         />
       </Form.Group>
-      <DropdownButton title="Selecione uma opção" show={isSelectOpen}>
+      <DropdownButton title="Selecione uma opção" show={isSelectOpen} onToggle={(isOpen) => setIsSelectOpen(isOpen)}>
         {filteredOptions.length > 0 ? (
           filteredOptions.map((option) => (
             <Dropdown.Item

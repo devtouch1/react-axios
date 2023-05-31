@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "./services/api";
+import axios from "axios";
+import { debounce } from "lodash";
 import SelectComponent from "./SelectComponent";
 import './App.css';
 
@@ -7,14 +9,19 @@ export default function App() {
   const [backendData, setBackendData] = useState([]);
   const [selectedOption, setSelectedOption] = useState("");
   const [position, setPosition] = useState({ x: 200, y: 100, l:0, h:0 });
-  const [yoloLabel, setYoloLabel] = useState("0 0.32 0.45 0.26 0.18")
+  const [yoloLabel, setYoloLabel] = useState(null);
+  const [lastItemDescription, setLastItemDescription] = useState(null);
+  const [lastItemId, setLastItemId] = useState(null);
 
-  // Função para atualizar a posição
+ 
+
+  // Função para atualizar a posição  
   const updatePosition = () => {
   
-  if(!lastItem) return;
-  else{setYoloLabel(lastItem.description.toString())}
-  console.log('last'+lastItem.description)
+  if(lastItemDescription==null || yoloLabel==null) return;
+  console.log("lastitem")
+  console.log("last item: "+lastItemDescription)
+  console.log(typeof(lastItemDescription));
   const [classe, xc, yc, ln, an] = yoloLabel.split(' ');
   console.log(yoloLabel);
   console.log({classe, xc, yc, ln, an});
@@ -40,14 +47,16 @@ export default function App() {
   };
 
   // Adicionar event listener ao evento resize
-  useEffect(() => {
-    window.addEventListener('resize', updatePosition);
+useEffect(() => {
+  const handleResize = debounce(updatePosition, 500); // Tempo de debounce de 300 milissegundos
 
-    // Limpar o event listener ao desmontar o componente
-    return () => {
-      window.removeEventListener('resize', updatePosition);
-    };
-  }, []);
+  window.addEventListener("resize", handleResize);
+
+  // Limpar o event listener ao desmontar o componente
+  return () => {
+    window.removeEventListener("resize", handleResize);
+  };
+}, []);
 
   useEffect(() => {
     async function getNumbers() {
@@ -78,24 +87,55 @@ export default function App() {
   // Obtém o último elemento da lista
   const lastItem = backendData.length > 0 ? backendData[backendData.length - 1] : null;
 
+  //function que atualiza o lastitem description
+  useEffect(() => {
+    // Resto do código...
+
+    // Atualiza o estado lastItemDescription quando lastItem é alterado
+    if (lastItem) {
+      setLastItemDescription(lastItem.description);
+      setYoloLabel(lastItemDescription);
+      updatePosition();
+    }
+  }, [lastItem]);
+
+  useEffect(() => {
+    // Chama a função updatePosition() sempre que lastItemDescription for atualizado
+    if (lastItemDescription && yoloLabel) {
+      updatePosition();
+    }
+  }, [lastItemDescription, yoloLabel]);
+
+  useEffect(()=>{
+    if(lastItem)
+    setLastItemId(lastItem._id);
+  }, [ yoloLabel, lastItem])
+  //ENVIA RESPOSTAS
   const handleSelect = async (option) => {
   setSelectedOption(option);
 
   const selectedOptionIndex = options.findIndex(
     (item) => item.value === option
   );
-  const respostas = selectedOptionIndex;
-  const contador = '1';
-
+  const respostas = [selectedOptionIndex];
+  if(lastItemId != null){
+    console.log(lastItem.respostas)
+    respostas.push(...lastItem.respostas);
+    const contador = (parseInt(lastItem.contador, 10) + 1).toString();
+    console.log(lastItemId)
+    let [classe, xc, yc, ln, an] = yoloLabel.split(' ');
+    classe = respostas[0];
+    const description = `${classe} ${xc} ${yc} ${ln} ${an}`;
   try {
-    const response = await api.post(`/objetos/${lastItem.id}`, null, {
-      params: { respostas, contador },
+    const response = await axios.post(`/api`, null, {
+      params: { respostas, contador, id: lastItemId, description: description },
     });
 
     console.log(response.data);
   } catch (error) {
     console.error(error);
   }
+}
 };
 
 
