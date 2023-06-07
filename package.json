@@ -1,6 +1,6 @@
 {
   "name": "react-axios",
-  "proxy": "http://localhost:5000",
+  "proxy": "https://serv-28yo.onrender.com/",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

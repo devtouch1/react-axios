@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "./services/api";
 import { debounce } from "lodash";
+import axios from "axios";
 import SelectComponent from "./SelectComponent";
 import './App.css';
 
