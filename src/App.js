@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import api from "./services/api";
-import axios from "axios";
 import { debounce } from "lodash";
 import SelectComponent from "./SelectComponent";
 import './App.css';
